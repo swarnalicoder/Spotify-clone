@@ -1,0 +1,9 @@
+
+ 
+   <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Green Circular Background -->
+            <circle cx="25" cy="25" r="24" fill="green"/>
+
+            <!-- Centered Solid Black Play Icon -->
+            <path d="M20 33V17L32 25L20 33Z" fill="black"/>
+        </svg>
