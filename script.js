@@ -7,7 +7,7 @@ let currFolder;
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`./${folder}/`); // ✅ Fixed template literal
+    let a = await fetch(`songs/${folder}/`); // ✅ Fixed template literal
     let response = await a.text();
     console.log(response);
 
@@ -64,10 +64,10 @@ async function getSongs(folder) {
 }
 
 const playMusic = (track, pause = false) => {
-    currentSong.src = `/${currFolder}/` + encodeURIComponent(track); // ✅ Fix encoding issue
+    currentSong.src =`${currFolder}/` + encodeURIComponent(track); // ✅ Fix encoding issue
     if (!pause) {
         currentSong.play();
-        play.src = "pause.svg"; // ✅ Update play button icon
+        play.src ="pause.svg"; // ✅ Update play button icon
     }
     updateTimer();
 
@@ -100,7 +100,7 @@ const formatTime = (seconds) => {
 };
 
 async function displayAlbums() {
-    let a = await fetch(`./songs/`); // ✅ Fixed template literal
+    let a = await fetch(`songs/songs/`); // ✅ Fixed template literal
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -114,14 +114,14 @@ async function displayAlbums() {
         if (e.href.includes("/songs")) {
             let folder = e.href.split("/").slice(-2)[0]
             //Get the metadata of the folder
-            let a = await fetch(`./songs/${folder}/info.json`); // ✅ Fixed template literal
+            let a = await fetch(`songs/songs/${folder}/info.json`); // ✅ Fixed template literal
             let response = await a.json();
             console.log(response)
             cardContainer.innerHTML = cardContainer.innerHTML + `  <div data-folder="${folder}" class="card ">
                         <div  class="play">
                             <img src="play.svg" alt="">
                         </div>
-                        <img src="/songs/${folder}/cover.jpg" alt="">
+                        <img src="songs/${folder}/cover.jpg" alt="">
                         <h2>${response.title}</h2>
                         <p>${response.description}</p>
                     </div>
@@ -160,10 +160,10 @@ async function main() {
     play.addEventListener("click", () => {
         if (currentSong.paused) {
             currentSong.play();
-            play.src = "pause.svg";
+            play.src ="pause.svg";
         } else {
             currentSong.pause();
-            play.src = "play2.svg";
+            play.src ="play2.svg";
         }
     });
 }
@@ -203,7 +203,7 @@ document.querySelector(".close").addEventListener("click", () => {
 // ✅ Previous Button
 document.querySelector("#previous").addEventListener("click", () => {
     console.log("Previous button clicked");
-    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0]));
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
     if ((index - 1) >= 0) {
         playMusic(songs[index - 1]);
     } else {
@@ -214,7 +214,7 @@ document.querySelector("#previous").addEventListener("click", () => {
 // ✅ Next Button
 next.addEventListener("click", () => {
     console.log("Next clicked");
-    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0]));
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
     if ((index + 1) < songs.length) {
         playMusic(songs[index + 1]);
     } else {
@@ -235,9 +235,9 @@ volumeSlider.addEventListener("input", (e) => {
     currentSong.volume = parseInt(e.target.value) / 100;
 
     if (currentSong.volume > 0) {
-        volumeIcon.src = volumeIcon.src.replace("mute.svg", "valume.svg");
+        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
     } else {
-        volumeIcon.src = volumeIcon.src.replace("valume.svg", "mute.svg");
+        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
     }
 });
 
@@ -245,11 +245,11 @@ volumeIcon.addEventListener("click", () => {
     if (currentSong.volume > 0) {
         currentSong.volume = 0;
         volumeSlider.value = 0;
-        volumeIcon.src = volumeIcon.src.replace("valume.svg", "mute.svg");
+        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
     } else {
         currentSong.volume = 0.2;
         volumeSlider.value = 100;
-        volumeIcon.src = volumeIcon.src.replace("mute.svg", "valume.svg");
+        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
     }
 });
 
