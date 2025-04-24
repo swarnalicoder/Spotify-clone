@@ -1,214 +1,258 @@
+console.log("Let's write JavaScript");
 
-console.log('Lets write JavaScript');
 let currentSong = new Audio();
-let songs;
+let songs = []; // ✅ Declare songs globally
 let currFolder;
 
-function secondsToMinutesSeconds(seconds) {
-    if (isNaN(seconds) || seconds < 0) {
-        return "00:00";
-    }
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-
-    const formattedMinutes = String(minutes).padStart(2, '0');
-    const formattedSeconds = String(remainingSeconds).padStart(2, '0');
-
-    return `${formattedMinutes}:${formattedSeconds}`;
-}
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`/${folder}/`)
+    let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/${folder}/`); // ✅ Fixed template literal
     let response = await a.text();
-    let div = document.createElement("div")
+    console.log(response);
+
+    let div = document.createElement("div");
     div.innerHTML = response;
-    let as = div.getElementsByTagName("a")
-    songs = []
+    let as = div.getElementsByTagName("a");
+
+    songs = []// ✅ Fix: Use global `songs` instead of redeclaring it
+
     for (let index = 0; index < as.length; index++) {
         const element = as[index];
-        if (element.href.endsWith(".mp3")) {
-            songs.push(element.href.split(`/${folder}/`)[1])
+        let href = element.getAttribute("href"); // Get the correct attribute
+
+        if (href.endsWith(".mp3")) {
+            let songName = decodeURIComponent(href)
+                .replace(/\\/g, `/${folder}/`)
+                .split(`/${folder}/`)
+                .pop(); // ✅ Clean song names properly
+
+            songs.push(songName);
         }
     }
- 
 
 
-    // Show all the songs in the playlist
-    let songUL = document.querySelector(".songList").getElementsByTagName("ul")[0]
-    songUL.innerHTML = ""
+
+    let songul = document.querySelector(".songlist ul");
+    songul.innerHTML = ""; // ✅ Clear existing list to avoid duplication
     for (const song of songs) {
-        songUL.innerHTML = songUL.innerHTML + `<li><img class="invert" width="34" src="img/music.svg" alt="">
-                            <div class="info">
-                                <div> ${song.replaceAll("%20", " ")}</div>
-                                <div>Harry</div>
-                            </div>
-                            <div class="playnow">
-                                <span>Play Now</span>
-                                <img class="invert" src="img/play.svg" alt="">
-                            </div> </li>`;
+        songul.innerHTML += `
+        <li>
+            <img class="invert" src="music.svg" alt="">
+            <div class="info">
+                <div>${song}</div>
+                <div>Swarnali</div>
+            </div>
+            <div class="playnow">
+                <span>Play now</span>
+                <img class="invert" src="play2.svg" alt="">
+            </div>
+        </li>
+    `;
+
     }
 
-    // Attach an event listener to each song
-    Array.from(document.querySelector(".songList").getElementsByTagName("li")).forEach(e => {
-        e.addEventListener("click", element => {
-            playMusic(e.querySelector(".info").firstElementChild.innerHTML.trim())
+    // ✅ Attach event listener to song list
+    Array.from(document.querySelectorAll(".songlist li")).forEach(e => {
+        e.addEventListener("click", () => {
+            let songName = e.querySelector(".info").firstElementChild.innerHTML.trim();
+            playMusic(songName);
+        });
+    });
 
-        })
-    })
-
-    return songs
+    return songs;
 }
 
 const playMusic = (track, pause = false) => {
-    currentSong.src = `/${currFolder}/` + track
+    currentSong.src =`${currFolder}/` + encodeURIComponent(track); // ✅ Fix encoding issue
     if (!pause) {
-        currentSong.play()
-        play.src = "img/pause.svg"
+        currentSong.play();
+        play.src ="pause.svg"; // ✅ Update play button icon
     }
-    document.querySelector(".songinfo").innerHTML = decodeURI(track)
-    document.querySelector(".songtime").innerHTML = "00:00 / 00:00"
+    updateTimer();
+
+    document.querySelector(".songinfo").innerHTML = track; // ✅ Set song name correctly without overwriting
 
 
-}
+
+};
+
+const updateTimer = () => {
+    currentSong.removeEventListener("timeupdate", updateTimer);
+
+    const timeUpdateHandler = () => {
+        let currentTime = formatTime(currentSong.currentTime);
+        let duration = currentSong.duration ? formatTime(currentSong.duration) : "00:00";
+
+        const timerElement = document.querySelector("#timer");
+        if (timerElement) {
+            timerElement.innerText = `${currentTime} / ${duration}`;
+        }
+    };
+
+    currentSong.addEventListener("timeupdate", timeUpdateHandler);
+};
+
+const formatTime = (seconds) => {
+    let mins = Math.floor(seconds / 60);
+    let secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" + secs : secs}`;
+};
 
 async function displayAlbums() {
-    console.log("displaying albums")
-    let a = await fetch(`/songs/`)
+    let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/songs/`); // ✅ Fixed template literal
     let response = await a.text();
-    let div = document.createElement("div")
+    let div = document.createElement("div");
     div.innerHTML = response;
-    let anchors = div.getElementsByTagName("a")
+    let anchors = div.getElementsByTagName("a");
     let cardContainer = document.querySelector(".cardContainer")
     let array = Array.from(anchors)
     for (let index = 0; index < array.length; index++) {
-        const e = array[index]; 
-        if (e.href.includes("/songs") && !e.href.includes(".htaccess")) {
-            let folder = e.href.split("/").slice(-2)[0]
-            // Get the metadata of the folder
-            let a = await fetch(`/songs/${folder}/info.json`)
-            let response = await a.json(); 
-            cardContainer.innerHTML = cardContainer.innerHTML + ` <div data-folder="${folder}" class="card">
-            <div class="play">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 20V4L19 12L5 20Z" stroke="#141B34" fill="#000" stroke-width="1.5"
-                        stroke-linejoin="round" />
-                </svg>
-            </div>
+        const e = array[index];
 
-            <img src="/songs/${folder}/cover.jpg" alt="">
-            <h2>${response.title}</h2>
-            <p>${response.description}</p>
-        </div>`
+
+        if (e.href.includes("/songs")) {
+            let folder = e.href.split("/").slice(-2)[0]
+            //Get the metadata of the folder
+            let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/songs/${folder}/info.json`); // ✅ Fixed template literal
+            let response = await a.json();
+            console.log(response)
+            cardContainer.innerHTML = cardContainer.innerHTML + `  <div data-folder="${folder}" class="card ">
+                        <div  class="play">
+                            <img src="play.svg" alt="">
+                        </div>
+                        <img src="songs/${folder}/cover.jpg" alt="">
+                        <h2>${response.title}</h2>
+                        <p>${response.description}</p>
+                    </div>
+` 
         }
     }
 
-    // Load the playlist whenever card is clicked
-    Array.from(document.getElementsByClassName("card")).forEach(e => { 
+    // load the playlist whenever card is clicked
+    Array.from(document.getElementsByClassName("card")).forEach(e => {
         e.addEventListener("click", async item => {
-            console.log("Fetching Songs")
-            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)  
-            playMusic(songs[0])
+            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)
 
+              
+        if (songs.length > 0) {
+            playMusic(songs[0]); // ✅ Start playing the first song automatically
+        }
         })
+
     })
+
+
+
+
 }
+
 
 async function main() {
-    // Get the list of all the songs
-    await getSongs("songs/ncs")
-    playMusic(songs[0], true)
+    songs = await getSongs("songs/ncs"); // ✅ Now it will assign to global `songs`
+    console.log(songs);
 
-    // Display all the albums on the page
-    await displayAlbums()
+    playMusic(songs[0], true);
 
+    //Dispale all the albums on the page
+    displayAlbums()
 
-    // Attach an event listener to play, next and previous
     play.addEventListener("click", () => {
         if (currentSong.paused) {
-            currentSong.play()
-            play.src = "img/pause.svg"
+            currentSong.play();
+            play.src ="pause.svg";
+        } else {
+            currentSong.pause();
+            play.src ="play2.svg";
         }
-        else {
-            currentSong.pause()
-            play.src = "img/play.svg"
-        }
-    })
-
-    // Listen for timeupdate event
-    currentSong.addEventListener("timeupdate", () => {
-        document.querySelector(".songtime").innerHTML = `${secondsToMinutesSeconds(currentSong.currentTime)} / ${secondsToMinutesSeconds(currentSong.duration)}`
-        document.querySelector(".circle").style.left = (currentSong.currentTime / currentSong.duration) * 100 + "%";
-    })
-
-    // Add an event listener to seekbar
-    document.querySelector(".seekbar").addEventListener("click", e => {
-        let percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
-        document.querySelector(".circle").style.left = percent + "%";
-        currentSong.currentTime = ((currentSong.duration) * percent) / 100
-    })
-
-    // Add an event listener for hamburger
-    document.querySelector(".hamburger").addEventListener("click", () => {
-        document.querySelector(".left").style.left = "0"
-    })
-
-    // Add an event listener for close button
-    document.querySelector(".close").addEventListener("click", () => {
-        document.querySelector(".left").style.left = "-120%"
-    })
-
-    // Add an event listener to previous
-    previous.addEventListener("click", () => {
-        currentSong.pause()
-        console.log("Previous clicked")
-        let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
-        if ((index - 1) >= 0) {
-            playMusic(songs[index - 1])
-        }
-    })
-
-    // Add an event listener to next
-    next.addEventListener("click", () => {
-        currentSong.pause()
-        console.log("Next clicked")
-
-        let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
-        if ((index + 1) < songs.length) {
-            playMusic(songs[index + 1])
-        }
-    })
-
-    // Add an event to volume
-    document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("change", (e) => {
-        console.log("Setting volume to", e.target.value, "/ 100")
-        currentSong.volume = parseInt(e.target.value) / 100
-        if (currentSong.volume >0){
-            document.querySelector(".volume>img").src = document.querySelector(".volume>img").src.replace("mute.svg", "volume.svg")
-        }
-    })
-
-    // Add event listener to mute the track
-    document.querySelector(".volume>img").addEventListener("click", e=>{ 
-        if(e.target.src.includes("volume.svg")){
-            e.target.src = e.target.src.replace("volume.svg", "mute.svg")
-            currentSong.volume = 0;
-            document.querySelector(".range").getElementsByTagName("input")[0].value = 0;
-        }
-        else{
-            e.target.src = e.target.src.replace("mute.svg", "volume.svg")
-            currentSong.volume = .10;
-            document.querySelector(".range").getElementsByTagName("input")[0].value = 10;
-        }
-
-    })
-
-
-
-
-
+    });
 }
 
-main() 
+    
+
+// ✅ Fix Seekbar Progress Update
+const seekbar = document.querySelector(".seekbar");
+const circle = document.querySelector(".circle");
+
+const updateSeekbar = () => {
+    if (currentSong.duration) {
+        let progress = (currentSong.currentTime / currentSong.duration) * 100;
+        seekbar.style.setProperty("--progress", `${progress}%`);
+        circle.style.left = `${progress}%`;
+    }
+};
+
+currentSong.addEventListener("timeupdate", updateSeekbar);
+
+seekbar.addEventListener("click", (e) => {
+    let percent = (e.offsetX / seekbar.getBoundingClientRect().width) * 100;
+    currentSong.currentTime = (currentSong.duration * percent) / 100;
+    updateSeekbar();
+});
+
+// ✅ Hamburger Menu
+document.querySelector(".hamburger").addEventListener("click", () => {
+    document.querySelector(".left").style.left = "0";
+});
+
+// ✅ Close Menu
+document.querySelector(".close").addEventListener("click", () => {
+    document.querySelector(".left").style.left = "-110%";
+});
+
+// ✅ Previous Button
+document.querySelector("#previous").addEventListener("click", () => {
+    console.log("Previous button clicked");
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
+    if ((index - 1) >= 0) {
+        playMusic(songs[index - 1]);
+    } else {
+        playMusic(songs[songs.length - 1]); // ✅ Loop back to last song
+    }
+});
+
+// ✅ Next Button
+next.addEventListener("click", () => {
+    console.log("Next clicked");
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
+    if ((index + 1) < songs.length) {
+        playMusic(songs[index + 1]);
+    } else {
+        playMusic(songs[0]); // ✅ Loop back to first song
+    }
+});
+
+// Volume slider and icon references
+const volumeSlider = document.getElementById("volumeSlider");
+const volumeIcon = document.getElementById("volumeIcon");
+
+// Set initial volume to 50%
+currentSong.volume = 0.2;
+volumeSlider.value = 100;
+
+volumeSlider.addEventListener("input", (e) => {
+    console.log("Setting volume to", e.target.value, "/ 100");
+    currentSong.volume = parseInt(e.target.value) / 100;
+
+    if (currentSong.volume > 0) {
+        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
+    } else {
+        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
+    }
+});
+
+volumeIcon.addEventListener("click", () => {
+    if (currentSong.volume > 0) {
+        currentSong.volume = 0;
+        volumeSlider.value = 0;
+        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
+    } else {
+        currentSong.volume = 0.2;
+        volumeSlider.value = 100;
+        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
+    }
+});
+
+
+
+main();
