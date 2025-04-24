@@ -7,7 +7,7 @@ let currFolder;
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`http://127.0.0.1:3000/${folder}/`); // ✅ Fixed template literal
+    let a = await fetch(`./${folder}/`); // ✅ Fixed template literal
     let response = await a.text();
     console.log(response);
 
@@ -100,7 +100,7 @@ const formatTime = (seconds) => {
 };
 
 async function displayAlbums() {
-    let a = await fetch(`http://127.0.0.1:3000/songs/`); // ✅ Fixed template literal
+    let a = await fetch(`./songs/`); // ✅ Fixed template literal
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -114,7 +114,7 @@ async function displayAlbums() {
         if (e.href.includes("/songs")) {
             let folder = e.href.split("/").slice(-2)[0]
             //Get the metadata of the folder
-            let a = await fetch(`http://127.0.0.1:3000/songs/${folder}/info.json`); // ✅ Fixed template literal
+            let a = await fetch(`./songs/${folder}/info.json`); // ✅ Fixed template literal
             let response = await a.json();
             console.log(response)
             cardContainer.innerHTML = cardContainer.innerHTML + `  <div data-folder="${folder}" class="card ">
