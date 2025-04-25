@@ -8,10 +8,9 @@
     ],
     "routes": [
       {
-        "src": "/songs/(.*)",
-        "dest": "/songs/$1"
+        "src": "/(.*)",
+        "dest": "/index.html"
       }
     ]
   }
-
   

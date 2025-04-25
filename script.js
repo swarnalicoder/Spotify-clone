@@ -235,9 +235,9 @@ volumeSlider.addEventListener("input", (e) => {
     currentSong.volume = parseInt(e.target.value) / 100;
 
     if (currentSong.volume > 0) {
-        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
+        volumeIcon.src =volumeIcon.src.r/eplace("/mute.svg", "/valume.svg");
     } else {
-        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
+        volumeIcon.src = volumeIcon.src.r/eplace("/valume.svg", "/mute.svg");
     }
 });
 
@@ -245,11 +245,11 @@ volumeIcon.addEventListener("click", () => {
     if (currentSong.volume > 0) {
         currentSong.volume = 0;
         volumeSlider.value = 0;
-        volumeIcon.src = volumeIcon.src.r/eplace("valume.svg", "mute.svg");
+        volumeIcon.src = volumeIcon.src.replace("/valume.svg", "/mute.svg");
     } else {
         currentSong.volume = 0.2;
-        volumeSlider.value = 100;
-        volumeIcon.src =volumeIcon.src.r/eplace("mute.svg", "valume.svg");
+        volumeSlider.value = 20;
+        volumeIcon.src =volumeIcon.src.replace("/mute.svg", "/valume.svg");
     }
 });
 
