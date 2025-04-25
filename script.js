@@ -4,10 +4,9 @@ let currentSong = new Audio();
 let songs = []; // ✅ Declare songs globally
 let currFolder;
 
-
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`/${folder}/`); // ✅ Fixed template literal
+    let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/${folder}/`); // ✅ Updated to full URL
     let response = await a.text();
     console.log(response);
 
@@ -15,7 +14,7 @@ async function getSongs(folder) {
     div.innerHTML = response;
     let as = div.getElementsByTagName("a");
 
-    songs = []// ✅ Fix: Use global `songs` instead of redeclaring it
+    songs = [] // ✅ Fix: Use global `songs` instead of redeclaring it
 
     for (let index = 0; index < as.length; index++) {
         const element = as[index];
@@ -23,15 +22,13 @@ async function getSongs(folder) {
 
         if (href.endsWith(".mp3")) {
             let songName = decodeURIComponent(href)
-                .replace(/\\/g, `/${folder}/`)
-                .split(`/${folder}/`)
+                .replace(/\\/g, `/songs/`) // ✅ Fixed folder path for consistency
+                .split(`/songs/`)
                 .pop(); // ✅ Clean song names properly
 
             songs.push(songName);
         }
     }
-
-
 
     let songul = document.querySelector(".songlist ul");
     songul.innerHTML = ""; // ✅ Clear existing list to avoid duplication
@@ -49,7 +46,6 @@ async function getSongs(folder) {
             </div>
         </li>
     `;
-
     }
 
     // ✅ Attach event listener to song list
@@ -64,17 +60,14 @@ async function getSongs(folder) {
 }
 
 const playMusic = (track, pause = false) => {
-    currentSong.src =`${currFolder}/` + encodeURIComponent(track); // ✅ Fix encoding issue
+    currentSong.src = `https://spotify-clone-delta-taupe.vercel.app/songs/${encodeURIComponent(track)}`; // ✅ Fix encoding issue
     if (!pause) {
         currentSong.play();
-        play.src ="pause.svg"; // ✅ Update play button icon
+        play.src = "pause.svg"; // ✅ Update play button icon
     }
     updateTimer();
 
     document.querySelector(".songinfo").innerHTML = track; // ✅ Set song name correctly without overwriting
-
-
-
 };
 
 const updateTimer = () => {
@@ -100,7 +93,7 @@ const formatTime = (seconds) => {
 };
 
 async function displayAlbums() {
-    let a = await fetch(`/songs/`); // ✅ Fixed template literal
+    let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/songs/`); // ✅ Updated to full URL
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -110,43 +103,35 @@ async function displayAlbums() {
     for (let index = 0; index < array.length; index++) {
         const e = array[index];
 
-
         if (e.href.includes("/songs")) {
-            let folder = e.href.split("/").slice(-2)[0]
-            //Get the metadata of the folder
-            let a = await fetch(`/songs/${folder}/info.json`); // ✅ Fixed template literal
+            let folder = e.href.split("/").slice(-2)[0];
+            // Get the metadata of the folder
+            let a = await fetch(`https://spotify-clone-delta-taupe.vercel.app/songs/${folder}/info.json`); // ✅ Updated to full URL
             let response = await a.json();
-            console.log(response)
-            cardContainer.innerHTML = cardContainer.innerHTML + `  <div data-folder="${folder}" class="card ">
-                        <div  class="play">
-                            <img src="play.svg" alt="">
-                        </div>
-                        <img src="songs/${folder}/cover.jpg" alt="">
-                        <h2>${response.title}</h2>
-                        <p>${response.description}</p>
+            console.log(response);
+            cardContainer.innerHTML += `
+                <div data-folder="${folder}" class="card">
+                    <div class="play">
+                        <img src="play.svg" alt="">
                     </div>
-` 
+                    <img src="https://spotify-clone-delta-taupe.vercel.app/songs/${folder}/cover.jpg" alt="Album Cover">
+                    <h2>${response.title}</h2>
+                    <p>${response.description}</p>
+                </div>
+            `;
         }
     }
 
     // load the playlist whenever card is clicked
     Array.from(document.getElementsByClassName("card")).forEach(e => {
         e.addEventListener("click", async item => {
-            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`)
-
-              
-        if (songs.length > 0) {
-            playMusic(songs[0]); // ✅ Start playing the first song automatically
-        }
-        })
-
-    })
-
-
-
-
+            songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`);
+            if (songs.length > 0) {
+                playMusic(songs[0]); // ✅ Start playing the first song automatically
+            }
+        });
+    });
 }
-
 
 async function main() {
     songs = await getSongs("/songs"); // ✅ Now it will assign to global `songs`
@@ -154,21 +139,19 @@ async function main() {
 
     playMusic(songs[0], true);
 
-    //Dispale all the albums on the page
-    displayAlbums()
+    // Display all the albums on the page
+    displayAlbums();
 
     play.addEventListener("click", () => {
         if (currentSong.paused) {
             currentSong.play();
-            play.src ="pause.svg";
+            play.src = "pause.svg";
         } else {
             currentSong.pause();
-            play.src ="play2.svg";
+            play.src = "play2.svg";
         }
     });
 }
-
-    
 
 // ✅ Fix Seekbar Progress Update
 const seekbar = document.querySelector(".seekbar");
@@ -203,7 +186,7 @@ document.querySelector(".close").addEventListener("click", () => {
 // ✅ Previous Button
 document.querySelector("#previous").addEventListener("click", () => {
     console.log("Previous button clicked");
-    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0])); // ✅ Fix split issue
     if ((index - 1) >= 0) {
         playMusic(songs[index - 1]);
     } else {
@@ -214,7 +197,7 @@ document.querySelector("#previous").addEventListener("click", () => {
 // ✅ Next Button
 next.addEventListener("click", () => {
     console.log("Next clicked");
-    let index = songs.indexOf(decodeURIComponent(currentSong.src.s/plit("/").slice(-1)[0]));
+    let index = songs.indexOf(decodeURIComponent(currentSong.src.split("/").slice(-1)[0])); // ✅ Fix split issue
     if ((index + 1) < songs.length) {
         playMusic(songs[index + 1]);
     } else {
@@ -235,9 +218,9 @@ volumeSlider.addEventListener("input", (e) => {
     currentSong.volume = parseInt(e.target.value) / 100;
 
     if (currentSong.volume > 0) {
-        volumeIcon.src =volumeIcon.src.r/eplace("/mute.svg", "/valume.svg");
+        volumeIcon.src = volumeIcon.src.replace("/mute.svg", "/volume.svg"); // ✅ Fixed typo in src replacement
     } else {
-        volumeIcon.src = volumeIcon.src.r/eplace("/valume.svg", "/mute.svg");
+        volumeIcon.src = volumeIcon.src.replace("/volume.svg", "/mute.svg"); // ✅ Fixed typo in src replacement
     }
 });
 
@@ -245,14 +228,12 @@ volumeIcon.addEventListener("click", () => {
     if (currentSong.volume > 0) {
         currentSong.volume = 0;
         volumeSlider.value = 0;
-        volumeIcon.src = volumeIcon.src.replace("/valume.svg", "/mute.svg");
+        volumeIcon.src = volumeIcon.src.replace("/volume.svg", "/mute.svg");
     } else {
         currentSong.volume = 0.2;
         volumeSlider.value = 20;
-        volumeIcon.src =volumeIcon.src.replace("/mute.svg", "/valume.svg");
+        volumeIcon.src = volumeIcon.src.replace("/mute.svg", "/volume.svg");
     }
 });
 
-
-
-main();
+main(); // Start the app
