@@ -149,7 +149,7 @@ async function displayAlbums() {
 
 
 async function main() {
-    songs = await getSongs("songs/ncs"); // ✅ Now it will assign to global `songs`
+    songs = await getSongs("/songs"); // ✅ Now it will assign to global `songs`
     console.log(songs);
 
     playMusic(songs[0], true);
